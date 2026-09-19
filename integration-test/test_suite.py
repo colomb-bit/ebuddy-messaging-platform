@@ -251,8 +251,8 @@ class EbuddyE2ETest:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="eBuddy Android/J2ME end-to-end integration test")
-    parser.add_argument("--api", default=os.getenv("EBUDDY_API", "http://127.0.0.1:8080"), help="REST base URL")
-    parser.add_argument("--ws", default=os.getenv("EBUDDY_WS", "ws://127.0.0.1:8080/v1/ws"), help="STOMP WebSocket URL")
+    parser.add_argument("--api", default=os.getenv("EBUDDY_API", "https://ebuddy-backend.onrender.com"), help="REST base URL")
+    parser.add_argument("--ws", default=os.getenv("EBUDDY_WS", "wss://ebuddy-backend.onrender.com/ws-chat"), help="STOMP WebSocket URL")
     parser.add_argument("--timeout", type=float, default=30.0, help="per-request and receive timeout in seconds")
     parser.add_argument("--insecure", action="store_true", help="disable TLS verification for local HTTPS testing")
     args = parser.parse_args()

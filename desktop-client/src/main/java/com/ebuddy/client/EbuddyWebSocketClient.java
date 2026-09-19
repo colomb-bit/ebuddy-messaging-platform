@@ -46,7 +46,10 @@ public final class EbuddyWebSocketClient implements AutoCloseable {
             }
 
             @Override public void onMessage(WebSocket webSocket, String text) {
-                String command = text.substring(0, text.indexOf('\n')).trim();
+                if (text == null || text.trim().isEmpty()) return;
+                int commandEnd = text.indexOf('\n');
+                if (commandEnd < 0) return;
+                String command = text.substring(0, commandEnd).trim();
                 if ("CONNECTED".equals(command)) {
                     webSocket.send(frame("SUBSCRIBE",
                             "id:ebuddy-user\ndestination:/user/queue/events\nack:auto", null));
