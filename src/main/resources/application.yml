@@ -9,9 +9,9 @@ spring:
     name: ebuddy-backend
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://dpg-dan3oertqb8s73afvjag-a/ebuddy}
-    username: ${SPRING_DATASOURCE_USERNAME:ebuddy}
-    password: ${SPRING_DATASOURCE_PASSWORD:ebuddy}
+    url: jdbc:postgresql://dpg-dan3oertqb8s73afvjag-a/ebuddy
+    username: ${SPRING_DATASOURCE_USERNAME:ebuddy_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:20}

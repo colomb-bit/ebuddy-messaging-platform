@@ -10,12 +10,6 @@ services:
     dockerContext: .
     healthCheckPath: /actuator/health
     envVars:
-      # Render's native Postgres URL is postgresql://... . The Render
-      # entrypoint adds jdbc: for Spring Boot's JDBC datasource property.
-      - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: ebuddy-postgres
-          property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: ebuddy-postgres
