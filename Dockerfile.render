@@ -10,5 +10,6 @@ COPY --from=build /src/target/*.jar app.jar
 COPY render-entrypoint.sh /app/render-entrypoint.sh
 RUN chmod +x /app/render-entrypoint.sh
 ENV PORT=8080
+ENV JAVA_OPTS="-Xms128m -Xmx350m -XX:+UseG1GC"
 EXPOSE 8080
 ENTRYPOINT ["/app/render-entrypoint.sh"]

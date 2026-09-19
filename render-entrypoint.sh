@@ -7,4 +7,4 @@ case "${SPRING_DATASOURCE_URL:-}" in
   postgresql://*) export SPRING_DATASOURCE_URL="jdbc:${SPRING_DATASOURCE_URL}" ;;
 esac
 
-exec java ${JAVA_TOOL_OPTIONS:-} -jar /app/app.jar
+exec java ${JAVA_OPTS:-} ${JAVA_TOOL_OPTIONS:-} -jar /app/app.jar
