@@ -1,0 +1,1 @@
+package com.ebuddy.web; import org.springframework.http.HttpStatus; public class ForbiddenException extends DomainException { public ForbiddenException(){super("FORBIDDEN","Operation is not permitted",HttpStatus.FORBIDDEN,false);} }

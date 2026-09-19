@@ -1,0 +1,3 @@
+package com.ebuddy.domain;
+import jakarta.persistence.*; import java.time.Instant; import java.util.UUID;
+@Entity @IdClass(ReceiptKey.class) @Table(name="message_receipt") public class ReceiptEntity { @Id @Column(name="message_id") UUID messageId; @Id @Column(name="recipient_user_id") UUID recipientUserId; @Column(name="delivered_at") Instant deliveredAt; @Column(name="read_at") Instant readAt; protected ReceiptEntity(){} public ReceiptEntity(UUID m,UUID u){messageId=m;recipientUserId=u;} public void delivered(){if(deliveredAt==null)deliveredAt=Instant.now();} public void read(){delivered();if(readAt==null)readAt=Instant.now();} }

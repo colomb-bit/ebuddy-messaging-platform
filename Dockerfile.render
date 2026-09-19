@@ -1,0 +1,16 @@
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+WORKDIR /src
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+COPY src ./src
+RUN mvn -B -q clean package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+RUN addgroup --system ebuddy && adduser --system --ingroup ebuddy ebuddy
+COPY --from=build /src/target/ebuddy-backend-1.0.0.jar /app/app.jar
+COPY render-entrypoint.sh /app/render-entrypoint.sh
+RUN chmod 0555 /app/render-entrypoint.sh && chown -R ebuddy:ebuddy /app
+USER ebuddy
+EXPOSE 10000
+ENTRYPOINT ["/app/render-entrypoint.sh"]

@@ -1,0 +1,1 @@
+package com.ebuddy.web; import org.springframework.http.HttpStatus; public class NotFoundException extends DomainException { public NotFoundException(){super("NOT_FOUND","Resource not found",HttpStatus.NOT_FOUND,false);} }

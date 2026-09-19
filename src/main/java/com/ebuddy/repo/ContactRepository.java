@@ -1,0 +1,1 @@
+package com.ebuddy.repo; import com.ebuddy.domain.*; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface ContactRepository extends JpaRepository<ContactEntity,Object>{List<ContactEntity> findByIdOwnerUserIdOrderByUpdatedAtDesc(UUID owner);}

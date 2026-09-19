@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+  title: eBuddy Messaging REST API
+  version: 1.0.0
+  description: |
+    Compact REST contract for Android and Nokia C2-05-class J2ME clients.
+    All timestamps are UTC Unix seconds. Responses omit optional fields when absent.
+servers:
+  - url: https://api.example.com
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Contacts
+  - name: Messages
+  - name: Sync
+paths:
+  /v1/auth/login:
+    post:
+      security: []
+      tags: [Auth]
+      summary: Issue a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '429': { $ref: '#/components/responses/Error429' }
+  /v1/auth/logout:
+    post:
+      tags: [Auth]
+      responses:
+        '204': { description: Token revoked }
+        '401': { $ref: '#/components/responses/Error401' }
+  /v1/contacts:
+    get:
+      tags: [Contacts]
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: Contact page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Contact' } }
+                  next_cursor: { type: string, nullable: true }
+        '401': { $ref: '#/components/responses/Error401' }
+    post:
+      tags: [Contacts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username]
+              properties:
+                username: { type: string, maxLength: 32 }
+      responses:
+        '201': { description: Contact request created, content: { application/json: { schema: { $ref: '#/components/schemas/Contact' } } } }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '409': { $ref: '#/components/responses/Error409' }
+  /v1/contacts/{user_id}:
+    parameters:
+      - { $ref: '#/components/parameters/UserId' }
+    patch:
+      tags: [Contacts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { type: string, enum: [accepted, blocked, removed] }
+                alias: { type: string, maxLength: 80 }
+      responses:
+        '200': { description: Contact updated, content: { application/json: { schema: { $ref: '#/components/schemas/Contact' } } } }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '404': { $ref: '#/components/responses/Error404' }
+  /v1/messages:
+    post:
+      tags: [Messages]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendMessageRequest' }
+      responses:
+        '201': { description: Message accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Message' } } } }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '403': { $ref: '#/components/responses/Error403' }
+        '409': { $ref: '#/components/responses/Error409' }
+        '429': { $ref: '#/components/responses/Error429' }
+    get:
+      tags: [Messages]
+      parameters:
+        - name: with_user_id
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Ordered message page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Message' } }
+                  next_cursor: { type: string, nullable: true }
+        '401': { $ref: '#/components/responses/Error401' }
+  /v1/messages/{message_id}/receipt:
+    parameters: [ { $ref: '#/components/parameters/MessageId' } ]
+    post:
+      tags: [Messages]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { type: string, enum: [delivered, read] }
+      responses:
+        '204': { description: Receipt accepted idempotently }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '403': { $ref: '#/components/responses/Error403' }
+        '404': { $ref: '#/components/responses/Error404' }
+  /v1/sync:
+    get:
+      tags: [Sync]
+      description: Use for reconnect and for the J2ME long-poll cursor protocol.
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string, default: '0' }
+        - { $ref: '#/components/parameters/Limit' }
+        - name: wait
+          in: query
+          description: Long-poll seconds; legacy clients use 25, Android uses 0.
+          schema: { type: integer, minimum: 0, maximum: 25, default: 0 }
+      responses:
+        '200':
+          description: Events available or long-poll timeout; timeout is still a successful empty response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor, more]
+                properties:
+                  items: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/SyncItem' } }
+                  next_cursor: { type: string }
+                  more: { type: boolean }
+        '400': { $ref: '#/components/responses/Error400' }
+        '401': { $ref: '#/components/responses/Error401' }
+        '429': { $ref: '#/components/responses/Error429' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: opaque-session-token }
+  parameters:
+    Cursor: { name: cursor, in: query, schema: { type: string, default: '0' } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 20, default: 20 } }
+    UserId: { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
+    MessageId: { name: message_id, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error400: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Error401: { description: Missing or invalid session, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Error403: { description: Not permitted, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Error404: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Error409: { description: Conflict or duplicate with different content, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Error429: { description: Rate limited, headers: { Retry-After: { schema: { type: integer } } }, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password, client_type]
+      properties:
+        username: { type: string, maxLength: 32 }
+        password: { type: string, maxLength: 128, format: password }
+        client_type: { type: string, enum: [android, j2me] }
+        device_label: { type: string, maxLength: 80 }
+    LoginResponse:
+      type: object
+      required: [token, expires_at, user]
+      properties:
+        token: { type: string }
+        expires_at: { type: integer, format: int64 }
+        user: { $ref: '#/components/schemas/User' }
+    User:
+      type: object
+      required: [id, username, display_name]
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        display_name: { type: string }
+    Contact:
+      type: object
+      required: [user, state]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        state: { type: string, enum: [pending, accepted, blocked, removed] }
+        alias: { type: string }
+    SendMessageRequest:
+      type: object
+      required: [to_user_id, client_message_id, body]
+      properties:
+        to_user_id: { type: string, format: uuid }
+        client_message_id: { type: string, maxLength: 64 }
+        body: { type: string, minLength: 1, maxLength: 4096 }
+    Message:
+      type: object
+      required: [id, from_user_id, to_user_id, client_message_id, sequence, body, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        from_user_id: { type: string, format: uuid }
+        to_user_id: { type: string, format: uuid }
+        client_message_id: { type: string }
+        sequence: { type: integer, format: int64 }
+        body: { type: string }
+        status: { type: string, enum: [sent, delivered, read] }
+        created_at: { type: integer, format: int64 }
+        delivered_at: { type: integer, format: int64, nullable: true }
+        read_at: { type: integer, format: int64, nullable: true }
+    SyncItem:
+      oneOf:
+        - $ref: '#/components/schemas/Message'
+        - type: object
+          required: [type, sequence, message_id, status]
+          properties:
+            type: { type: string, enum: [message.status] }
+            sequence: { type: integer, format: int64 }
+            message_id: { type: string, format: uuid }
+            status: { type: string, enum: [delivered, read] }
+    Error:
+      type: object
+      required: [error, code, message, request_id, retryable]
+      properties:
+        error: { type: string, enum: [invalid_request, authentication_failed, forbidden, not_found, conflict, rate_limited, server_error] }
+        code: { type: string, example: MESSAGE_DUPLICATE }
+        message: { type: string, maxLength: 160 }
+        request_id: { type: string, maxLength: 64 }
+        retryable: { type: boolean }
+        retry_after: { type: integer, nullable: true }
+
+# Low-bandwidth rules:
+# - UTF-8 JSON only; clients must accept omitted optional fields.
+# - GET /v1/sync?wait=25 is the only long-poll endpoint. A timeout returns 200 with items=[] and the same cursor.
+# - Every mutating request is safe to retry when the client reuses its identifier.
+# - Do not send access tokens in query strings. Do not compress responses smaller than the negotiated threshold.

@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.Ebuddy" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item><item name="android:colorAccent">#2E7DFF</item><item name="android:navigationBarColor">#0C1020</item><item name="android:statusBarColor">#0C1020</item><item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

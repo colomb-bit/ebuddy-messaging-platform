@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ebuddy-j2me" default="jar" basedir=".">
+  <property file="nbproject/project.properties"/>
+  <property environment="env"/>
+  <property name="wtk.home" value="${env.WTK_HOME}"/>
+  <property name="preverify" value="${wtk.home}/bin/preverify"/>
+  <target name="clean"><delete dir="build"/><delete dir="dist"/></target>
+  <target name="compile"><mkdir dir="build/classes"/><javac srcdir="src" destdir="build/classes" source="1.3" target="1.1" includeantruntime="false" bootclasspath="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar"/></target>
+  <target name="preverify" depends="compile"><mkdir dir="build/preverified"/><exec executable="${preverify}" failonerror="true"><arg value="-classpath"/><arg path="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar"/><arg value="-d"/><arg path="build/preverified"/><arg path="build/classes"/></exec></target>
+  <target name="jar" depends="preverify"><mkdir dir="dist"/><jar jarfile="dist/ebuddy.jar" manifest="MANIFEST.MF"><fileset dir="build/preverified"/><fileset dir="res"/></jar><copy file="ebuddy.jad" todir="dist"/></target>
+</project>

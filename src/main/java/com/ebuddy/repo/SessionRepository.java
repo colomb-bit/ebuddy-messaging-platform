@@ -1,0 +1,1 @@
+package com.ebuddy.repo; import com.ebuddy.domain.SessionEntity; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface SessionRepository extends JpaRepository<SessionEntity,UUID>{}

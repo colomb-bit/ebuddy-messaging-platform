@@ -1,0 +1,1 @@
+package com.ebuddy.web; import org.springframework.http.HttpStatus; public class DomainException extends RuntimeException { public final String code; public final HttpStatus status; public final boolean retryable; public DomainException(String c,String m,HttpStatus s,boolean r){super(m);code=c;status=s;retryable=r;} }

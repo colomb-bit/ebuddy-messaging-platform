@@ -1,0 +1,1 @@
+package com.ebuddy.web; import org.springframework.http.HttpStatus; public class ConflictException extends DomainException { public ConflictException(String m){super("IDEMPOTENCY_CONFLICT",m,HttpStatus.CONFLICT,false);} }

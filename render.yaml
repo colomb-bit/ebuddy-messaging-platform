@@ -1,0 +1,51 @@
+# Render Blueprint for eBuddy.
+# Place this file at the repository root before creating a Render Blueprint.
+services:
+  - type: web
+    name: ebuddy-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      # Render's native Postgres URL is postgresql://... . The Render
+      # entrypoint adds jdbc: for Spring Boot's JDBC datasource property.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ebuddy-postgres
+          property: connectionString
+      - key: DB_URL
+        fromDatabase:
+          name: ebuddy-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ebuddy-redis
+          type: keyvalue
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: "10000"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=75"
+
+  # Render calls this resource type "keyvalue". The free plan has limited
+  # memory and no persistence; it is appropriate for presence/session cache,
+  # not durable application data.
+  - type: keyvalue
+    name: ebuddy-redis
+    plan: free
+    region: oregon
+    persistenceMode: off
+    maxmemoryPolicy: noeviction
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: "Required by Render Blueprint; service is used through Render networking"
+
+databases:
+  - name: ebuddy-postgres
+    databaseName: ebuddy
+    plan: free

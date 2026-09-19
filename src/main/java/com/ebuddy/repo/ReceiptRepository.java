@@ -1,0 +1,1 @@
+package com.ebuddy.repo; import com.ebuddy.domain.ReceiptEntity; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface ReceiptRepository extends JpaRepository<ReceiptEntity,Object>{Optional<ReceiptEntity> findByMessageIdAndRecipientUserId(UUID messageId,UUID recipientUserId);}
