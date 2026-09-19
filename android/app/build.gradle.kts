@@ -1,7 +1,7 @@
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id("org.jetbrains.kotlin.plugin.compose"); id("com.google.devtools.ksp") }
 
 android { namespace = "com.ebuddy.android"; compileSdk = 35
-    defaultConfig { applicationId = "com.ebuddy.android"; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = "1.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"; buildConfigField("String", "API_BASE_URL", "\"https://api.example.com/\""); buildConfigField("String", "WS_URL", "\"wss://api.example.com/v1/ws\""); vectorDrawables { useSupportLibrary = true } }
+    defaultConfig { applicationId = "com.ebuddy.android"; minSdk = 23; targetSdk = 35; versionCode = 1; versionName = "1.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"; buildConfigField("String", "API_BASE_URL", "\"https://ebuddy-backend.onrender.com/\""); buildConfigField("String", "WS_URL", "\"wss://ebuddy-backend.onrender.com/ws-chat\""); vectorDrawables { useSupportLibrary = true } }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }

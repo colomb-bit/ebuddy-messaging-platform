@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -24,5 +25,13 @@ public class StompMessageController {
             throw new IllegalArgumentException("AUTH_REQUIRED");
         }
         messages.send(UUID.fromString(principal.getName()), request);
+    }
+
+    @MessageMapping("/receipt")
+    public void receipt(Principal principal, @Payload Map<String, String> request) {
+        if (principal == null || request == null || request.get("message_id") == null || request.get("state") == null) {
+            throw new IllegalArgumentException("INVALID_RECEIPT");
+        }
+        messages.receipt(UUID.fromString(principal.getName()), UUID.fromString(request.get("message_id")), request.get("state"));
     }
 }
