@@ -9,7 +9,7 @@ spring:
     name: ebuddy-backend
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ebuddy}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://dpg-dan3oertqb8s73afvjag-a/ebuddy}
     username: ${SPRING_DATASOURCE_USERNAME:ebuddy}
     password: ${SPRING_DATASOURCE_PASSWORD:ebuddy}
     driver-class-name: org.postgresql.Driver
