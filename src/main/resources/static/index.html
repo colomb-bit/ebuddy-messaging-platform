@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eBuddy Web</title>
+<style>
+body{margin:0;background:#eef1f5;color:#17202a;font:14px Arial,sans-serif}
+#app{max-width:420px;margin:0 auto;background:#fff;min-height:100vh}
+header{background:#173b63;color:#fff;padding:10px 12px;font-size:18px;font-weight:bold}
+main{padding:10px}.box{border:1px solid #c7d0da;padding:10px;margin-bottom:10px;background:#fafafa}
+label{display:block;margin:7px 0 3px;font-weight:bold}input,button{font:16px Arial,sans-serif;box-sizing:border-box}
+input{width:100%;padding:8px;border:1px solid #9aa9b8;background:#fff}button{padding:8px 12px;border:1px solid #173b63;background:#21598f;color:#fff;margin-top:9px}
+button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row input{flex:1}.row button{width:auto;white-space:nowrap}
+#status{padding:7px;background:#fff4cc;color:#604a00;border:1px solid #e5cf80;margin-bottom:10px}
+#messages{height:300px;overflow:auto;border:1px solid #c7d0da;background:#f8fafc;padding:6px}
+.msg{padding:6px;margin:4px 0;border-bottom:1px solid #e1e5e9;word-wrap:break-word}.incoming{background:#e8f2ff}.outgoing{background:#f1f1f1;text-align:right}
+.small{font-size:12px;color:#647383}.hidden{display:none}.error{background:#ffe1e1;color:#8d1b1b;border-color:#d99}
+</style>
+</head>
+<body>
+<div id="app">
+<header>eBuddy Web</header>
+<main>
+<div id="status">Not connected</div>
+<section id="loginBox" class="box">
+<strong>Sign in</strong>
+<label for="username">Username</label><input id="username" maxlength="32" autocomplete="username">
+<label for="password">Password</label><input id="password" type="password" maxlength="128" autocomplete="current-password">
+<button id="loginButton">Login</button>
+<p class="small">Use the same eBuddy account as the Android or Nokia client.</p>
+</section>
+<section id="chatBox" class="hidden">
+<div class="box">
+<label for="recipient">Recipient user ID</label>
+<input id="recipient" maxlength="36" placeholder="UUID of the contact">
+<button class="secondary" id="logoutButton">Logout</button>
+</div>
+<div id="messages" aria-live="polite"></div>
+<div class="box">
+<div class="row"><input id="message" maxlength="4096" placeholder="Message"><button id="sendButton">Send</button></div>
+<div class="small">Messages use low-bandwidth HTTP long-polling.</div>
+</div>
+</section>
+</main>
+</div>
+<script>
+(function(){
+  var API = ''; /* Same-origin deployment. For another host, set the full API URL. */
+  var token = null, cursor = 0, pollTimer = null, polling = false;
+  var $ = function(id){return document.getElementById(id);};
+  var status = $('status');
+  function text(v){return String(v == null ? '' : v);}
+  function setStatus(message, bad){status.className = bad ? 'error' : ''; status.innerHTML = text(message);}
+  function saveToken(v){token=v;try{if(window.localStorage){localStorage.setItem('ebuddy_token',v);}}catch(e){}}
+  function loadToken(){try{return window.localStorage ? localStorage.getItem('ebuddy_token') : null;}catch(e){return null;}}
+  function clearToken(){token=null;try{if(window.localStorage){localStorage.removeItem('ebuddy_token');}}catch(e){}}
+  function request(method,path,body,done){
+    var xhr = new XMLHttpRequest(), finished=false;
+    xhr.open(method,API+path,true); xhr.setRequestHeader('Accept','application/json');
+    if(token){xhr.setRequestHeader('Authorization','Bearer '+token);}
+    if(body){xhr.setRequestHeader('Content-Type','application/json');}
+    xhr.onreadystatechange=function(){if(xhr.readyState!==4||finished)return;finished=true;
+      var data=null;try{data=xhr.responseText?JSON.parse(xhr.responseText):{};}catch(e){data={};}
+      done(xhr.status,data,xhr.responseText||'');};
+    xhr.onerror=function(){if(!finished){finished=true;done(0,{},'Network error');}};
+    try{xhr.send(body?JSON.stringify(body):null);}catch(e){done(0,{},e.message);}
+  }
+  function showLoggedIn(){
+    $('loginBox').className='hidden';$('chatBox').className='';setStatus('Connected. Polling for messages.');
+    if(!polling){polling=true;poll();}
+  }
+  function login(){
+    var u=$('username').value,p=$('password').value;
+    if(!u||!p){setStatus('Enter username and password.',true);return;}
+    setStatus('Signing in...');$('loginButton').disabled=true;
+    request('POST','/api/j2me/login',{username:u,password:p,client_type:'j2me',device_label:'Retro Web'},function(code,data,raw){
+      $('loginButton').disabled=false;
+      if(code>=200&&code<300&&data.token){saveToken(data.token);showLoggedIn();}
+      else{setStatus('Login failed ('+code+'). '+(data.message||raw||'Please try again.'),true);}
+    });
+  }
+  function addMessage(item){
+    var node=document.createElement('div'), incoming=item.to_user_id===null||item.to_user_id===undefined||item.to_user_id!==getOwnId();
+    node.className='msg '+(incoming?'incoming':'outgoing');
+    node.appendChild(document.createTextNode(text(item.body)));
+    var meta=document.createElement('div');meta.className='small';meta.appendChild(document.createTextNode(text(item.status||'sent')));node.appendChild(meta);
+    $('messages').appendChild(node);$('messages').scrollTop=$('messages').scrollHeight;
+  }
+  /* The J2ME poll contract returns messages addressed to this token's user. */
+  function getOwnId(){return '';} 
+  function poll(){
+    if(!token){polling=false;return;}
+    request('GET','/api/j2me/poll?cursor='+encodeURIComponent(cursor)+'&wait=20&limit=20',null,function(code,data){
+      if(code===200){var list=data.items||[],i;for(i=0;i<list.length;i++){addMessage(list[i]);if(list[i].sequence!=null)cursor=parseInt(list[i].sequence,10)||cursor;}setStatus('Connected. Last checked '+new Date().toLocaleTimeString());pollTimer=setTimeout(poll,200);}
+      else if(code===401){clearToken();polling=false;$('chatBox').className='hidden';$('loginBox').className='box';setStatus('Session expired. Please log in again.',true);}
+      else{setStatus('Temporary network error ('+code+'). Retrying...',true);pollTimer=setTimeout(poll,5000);}
+    });
+  }
+  function send(){
+    var to=$('recipient').value,body=$('message').value;
+    if(!to||!body){setStatus('Enter a recipient user ID and message.',true);return;}
+    $('sendButton').disabled=true;
+    request('POST','/api/j2me/send',{to_user_id:to,client_message_id:'web-'+new Date().getTime(),body:body},function(code,data,raw){
+      $('sendButton').disabled=false;
+      if(code>=200&&code<300){var item={body:body,status:'sent',to_user_id:to};addMessage(item);$('message').value='';setStatus('Message sent.');}
+      else{setStatus('Send failed ('+code+'). '+(data.message||raw||'Retry later.'),true);}
+    });
+  }
+  function logout(){if(pollTimer){clearTimeout(pollTimer);}polling=false;clearToken();$('chatBox').className='hidden';$('loginBox').className='box';setStatus('Logged out.');}
+  $('loginButton').onclick=login;$('sendButton').onclick=send;$('logoutButton').onclick=logout;
+  $('password').onkeypress=function(e){e=e||window.event;if(e.keyCode===13)login();};
+  $('message').onkeypress=function(e){e=e||window.event;if(e.keyCode===13)send();};
+  if(loadToken()){token=loadToken();showLoggedIn();}
+})();
+</script>
+</body>
+</html>
