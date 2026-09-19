@@ -19,9 +19,9 @@ services:
   app:
     build: .
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/ebuddy
-      DB_USERNAME: ebuddy
-      DB_PASSWORD: ebuddy
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ebuddy
+      SPRING_DATASOURCE_USERNAME: ebuddy
+      SPRING_DATASOURCE_PASSWORD: ebuddy
       REDIS_HOST: redis
       JWT_SECRET: replace-with-a-secret-at-least-256-bits
     ports: ["8080:8080"]

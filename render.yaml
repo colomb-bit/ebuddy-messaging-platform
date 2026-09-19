@@ -12,14 +12,18 @@ services:
     envVars:
       # Render's native Postgres URL is postgresql://... . The Render
       # entrypoint adds jdbc: for Spring Boot's JDBC datasource property.
-      - key: DATABASE_URL
+      - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: ebuddy-postgres
           property: connectionString
-      - key: DB_URL
+      - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: ebuddy-postgres
-          property: jdbcConnectionString
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: ebuddy-postgres
+          property: password
       - key: REDIS_URL
         fromService:
           name: ebuddy-redis
