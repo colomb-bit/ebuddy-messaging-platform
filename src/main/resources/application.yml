@@ -9,9 +9,9 @@ spring:
     name: ebuddy-backend
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ebuddy}
+    username: ${SPRING_DATASOURCE_USERNAME:ebuddy}
+    password: ${SPRING_DATASOURCE_PASSWORD:ebuddy}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:20}
@@ -34,10 +34,13 @@ spring:
 
   data:
     redis:
+      url: ${REDIS_URL:redis://${SPRING_DATA_REDIS_HOST:localhost}:${SPRING_DATA_REDIS_PORT:6379}}
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
       timeout: 2s
+      repositories:
+        enabled: false
 
   jackson:
     default-property-inclusion: non_null

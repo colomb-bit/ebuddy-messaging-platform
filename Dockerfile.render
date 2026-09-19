@@ -7,6 +7,8 @@ RUN mvn -B -q clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /src/target/*.jar app.jar
+COPY render-entrypoint.sh /app/render-entrypoint.sh
+RUN chmod +x /app/render-entrypoint.sh
 ENV PORT=8080
 EXPOSE 8080
-CMD ["java", "-Xms128m", "-Xmx256m", "-jar", "app.jar"]
+ENTRYPOINT ["/app/render-entrypoint.sh"]
