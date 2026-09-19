@@ -1,14 +1,24 @@
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+# syntax=docker/dockerfile:1
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
 WORKDIR /src
-COPY . .
-ENV MAVEN_OPTS="-Xmx256m"
-RUN mvn -B -q clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+# Cache Maven wrapper metadata and dependencies before application source changes.
+COPY mvnw pom.xml ./
+COPY .mvn .mvn
+RUN chmod +x mvnw \
+    && ./mvnw -B -DskipTests dependency:go-offline
+
+COPY src src
+COPY render-entrypoint.sh render-entrypoint.sh
+RUN ./mvnw -B -DskipTests clean package \
+    && test -s target/ebuddy-backend-1.0.0.jar
+
+FROM eclipse-temurin:17-jre-alpine AS runtime
 WORKDIR /app
-COPY --from=build /src/target/*.jar app.jar
-COPY render-entrypoint.sh /app/render-entrypoint.sh
+COPY --from=build /src/target/ebuddy-backend-1.0.0.jar app.jar
+COPY --from=build /src/render-entrypoint.sh render-entrypoint.sh
 RUN chmod +x /app/render-entrypoint.sh
+
 ENV PORT=8080
 ENV JAVA_OPTS="-Xms128m -Xmx350m -XX:+UseG1GC"
 EXPOSE 8080
