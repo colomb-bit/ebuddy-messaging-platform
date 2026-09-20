@@ -28,7 +28,16 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
 <label for="username">Username</label><input id="username" maxlength="32" autocomplete="username">
 <label for="password">Password</label><input id="password" type="password" maxlength="128" autocomplete="current-password">
 <button id="loginButton">Login</button>
+<button class="secondary" id="registerToggle">Create account</button>
 <p class="small">Use the same eBuddy account as the Android or Nokia client.</p>
+</section>
+<section id="registerBox" class="box hidden">
+<strong>Create account</strong>
+<label for="displayName">Display name</label><input id="displayName" maxlength="80" autocomplete="name">
+<label for="registerUsername">Username</label><input id="registerUsername" maxlength="32" autocomplete="username">
+<label for="registerPassword">Password (8+ characters)</label><input id="registerPassword" type="password" maxlength="128" autocomplete="new-password">
+<button id="registerButton">Sign up</button>
+<button class="secondary" id="loginToggle">Back to login</button>
 </section>
 <section id="chatBox" class="hidden">
 <div class="box">
@@ -67,9 +76,11 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
     try{xhr.send(body?JSON.stringify(body):null);}catch(e){done(0,{},e.message);}
   }
   function showLoggedIn(){
-    $('loginBox').className='hidden';$('chatBox').className='';setStatus('Connected. Polling for messages.');
+    $('loginBox').className='hidden';$('registerBox').className='hidden';$('chatBox').className='';setStatus('Connected. Polling for messages.');
     if(!polling){polling=true;poll();}
   }
+  function showLogin(){ $('loginBox').className='box';$('registerBox').className='hidden';$('chatBox').className='hidden'; }
+  function showRegister(){ $('loginBox').className='hidden';$('registerBox').className='box';$('chatBox').className='hidden';setStatus('Create your eBuddy account.'); }
   function login(){
     var u=$('username').value,p=$('password').value;
     if(!u||!p){setStatus('Enter username and password.',true);return;}
@@ -78,6 +89,17 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
       $('loginButton').disabled=false;
       if(code>=200&&code<300&&data.token){saveToken(data.token);showLoggedIn();}
       else{setStatus('Login failed ('+code+'). '+(data.message||raw||'Please try again.'),true);}
+    });
+  }
+  function register(){
+    var d=$('displayName').value,u=$('registerUsername').value,p=$('registerPassword').value;
+    if(!d||!u||!p){setStatus('Enter display name, username, and password.',true);return;}
+    if(p.length<8){setStatus('Password must contain at least 8 characters.',true);return;}
+    setStatus('Creating account...');$('registerButton').disabled=true;
+    request('POST','/api/auth/register',{username:u,password:p,displayName:d},function(code,data,raw){
+      $('registerButton').disabled=false;
+      if(code>=200&&code<300&&data.token){saveToken(data.token);showLoggedIn();}
+      else{setStatus('Registration failed ('+code+'). '+(data.message||raw||'Please try another username.'),true);}
     });
   }
   function addMessage(item){
@@ -93,7 +115,7 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
     if(!token){polling=false;return;}
     request('GET','/api/j2me/poll?cursor='+encodeURIComponent(cursor)+'&wait=20&limit=20',null,function(code,data){
       if(code===200){var list=data.items||[],i;for(i=0;i<list.length;i++){addMessage(list[i]);if(list[i].sequence!=null)cursor=parseInt(list[i].sequence,10)||cursor;}setStatus('Connected. Last checked '+new Date().toLocaleTimeString());pollTimer=setTimeout(poll,200);}
-      else if(code===401){clearToken();polling=false;$('chatBox').className='hidden';$('loginBox').className='box';setStatus('Session expired. Please log in again.',true);}
+      else if(code===401){clearToken();polling=false;showLogin();setStatus('Session expired. Please log in again.',true);}
       else{setStatus('Temporary network error ('+code+'). Retrying...',true);pollTimer=setTimeout(poll,5000);}
     });
   }
@@ -107,9 +129,10 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
       else{setStatus('Send failed ('+code+'). '+(data.message||raw||'Retry later.'),true);}
     });
   }
-  function logout(){if(pollTimer){clearTimeout(pollTimer);}polling=false;clearToken();$('chatBox').className='hidden';$('loginBox').className='box';setStatus('Logged out.');}
-  $('loginButton').onclick=login;$('sendButton').onclick=send;$('logoutButton').onclick=logout;
+  function logout(){if(pollTimer){clearTimeout(pollTimer);}polling=false;clearToken();showLogin();setStatus('Logged out.');}
+  $('loginButton').onclick=login;$('registerButton').onclick=register;$('registerToggle').onclick=showRegister;$('loginToggle').onclick=showLogin;$('sendButton').onclick=send;$('logoutButton').onclick=logout;
   $('password').onkeypress=function(e){e=e||window.event;if(e.keyCode===13)login();};
+  $('registerPassword').onkeypress=function(e){e=e||window.event;if(e.keyCode===13)register();};
   $('message').onkeypress=function(e){e=e||window.event;if(e.keyCode===13)send();};
   if(loadToken()){token=loadToken();showLoggedIn();}
 })();
