@@ -74,14 +74,14 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
     var u=$('username').value,p=$('password').value;
     if(!u||!p){setStatus('Enter username and password.',true);return;}
     setStatus('Signing in...');$('loginButton').disabled=true;
-    request('POST','/api/j2me/login',{username:u,password:p,client_type:'j2me',device_label:'Retro Web'},function(code,data,raw){
+    request('POST','/api/j2me/login',{username:u,password:p,clientType:'j2me',deviceLabel:'Retro Web'},function(code,data,raw){
       $('loginButton').disabled=false;
       if(code>=200&&code<300&&data.token){saveToken(data.token);showLoggedIn();}
       else{setStatus('Login failed ('+code+'). '+(data.message||raw||'Please try again.'),true);}
     });
   }
   function addMessage(item){
-    var node=document.createElement('div'), incoming=item.to_user_id===null||item.to_user_id===undefined||item.to_user_id!==getOwnId();
+    var node=document.createElement('div'), incoming=item.toUserId===null||item.toUserId===undefined||item.toUserId!==getOwnId();
     node.className='msg '+(incoming?'incoming':'outgoing');
     node.appendChild(document.createTextNode(text(item.body)));
     var meta=document.createElement('div');meta.className='small';meta.appendChild(document.createTextNode(text(item.status||'sent')));node.appendChild(meta);
@@ -101,9 +101,9 @@ button.secondary{background:#fff;color:#173b63}.row{display:flex;gap:6px}.row in
     var to=$('recipient').value,body=$('message').value;
     if(!to||!body){setStatus('Enter a recipient user ID and message.',true);return;}
     $('sendButton').disabled=true;
-    request('POST','/api/j2me/send',{to_user_id:to,client_message_id:'web-'+new Date().getTime(),body:body},function(code,data,raw){
+    request('POST','/api/j2me/send',{toUserId:to,clientMessageId:'web-'+new Date().getTime(),body:body},function(code,data,raw){
       $('sendButton').disabled=false;
-      if(code>=200&&code<300){var item={body:body,status:'sent',to_user_id:to};addMessage(item);$('message').value='';setStatus('Message sent.');}
+      if(code>=200&&code<300){var item={body:body,status:'sent',toUserId:to};addMessage(item);$('message').value='';setStatus('Message sent.');}
       else{setStatus('Send failed ('+code+'). '+(data.message||raw||'Retry later.'),true);}
     });
   }
