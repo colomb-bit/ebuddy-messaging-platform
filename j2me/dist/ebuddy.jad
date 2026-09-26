@@ -1,11 +1,11 @@
-MIDlet-Name: eBuddy C2-05
-MIDlet-Version: 1.0.0
-MIDlet-Vendor: eBuddy
-MIDlet-Description: Low-bandwidth instant messaging for Series 40
+MIDlet-Name: Ebuddy Messaging - Nokia Edition
+MIDlet-Version: 2.0.0
+MIDlet-Vendor: Ebuddy
+MIDlet-Description: Low-bandwidth instant messaging for Nokia C2-05
 MIDlet-Jar-URL: ebuddy.jar
-MIDlet-Jar-Size: 18625
+MIDlet-Jar-Size: 18950
 MIDlet-Icon: ebuddy.png
-MIDlet-1: eBuddy, /ebuddy.png, com.ebuddy.j2me.EbuddyMidlet
+MIDlet-1: Ebuddy Messaging,/ebuddy.png,com.ebuddy.j2me.EbuddyMidlet
 MicroEdition-Profile: MIDP-2.1
 MicroEdition-Configuration: CLDC-1.1
 MIDlet-Permissions: javax.microedition.io.Connector.http

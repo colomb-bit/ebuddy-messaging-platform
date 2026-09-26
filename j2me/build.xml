@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ebuddy-j2me" default="jar" basedir=".">
-  <property file="nbproject/project.properties"/>
-  <property environment="env"/>
-  <property name="wtk.home" value="${env.WTK_HOME}"/>
-  <property name="preverify" value="${wtk.home}/bin/preverify"/>
-  <target name="clean"><delete dir="build"/><delete dir="dist"/></target>
-  <target name="compile"><mkdir dir="build/classes"/><javac srcdir="src" destdir="build/classes" source="1.3" target="1.1" includeantruntime="false" bootclasspath="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar"/></target>
-  <target name="preverify" depends="compile"><mkdir dir="build/preverified"/><exec executable="${preverify}" failonerror="true"><arg value="-classpath"/><arg path="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar"/><arg value="-d"/><arg path="build/preverified"/><arg path="build/classes"/></exec></target>
-  <target name="jar" depends="preverify"><mkdir dir="dist"/><jar jarfile="dist/ebuddy.jar" manifest="MANIFEST.MF"><fileset dir="build/preverified"/><fileset dir="res"/></jar><copy file="ebuddy.jad" todir="dist"/></target>
+<project name="ebuddy-j2me" default="host-jar" basedir=".">
+  <property file="build.properties"/>
+  <property name="build.classes" value="${build.dir}/host-classes"/>
+  <target name="clean"><delete dir="${build.dir}"/><delete dir="${dist.dir}"/></target>
+  <target name="host-compile">
+    <mkdir dir="${build.classes}"/>
+    <javac srcdir="${src.dir}" destdir="${build.classes}" source="1.7" target="1.7" includeantruntime="false" encoding="UTF-8">
+      <classpath><pathelement location="${microemu.cldc}"/><pathelement location="${microemu.midp}"/></classpath>
+    </javac>
+  </target>
+  <target name="host-jar" depends="host-compile">
+    <mkdir dir="${dist.dir}"/>
+    <jar jarfile="${dist.dir}/ebuddy.jar" manifest="MANIFEST.MF"><fileset dir="${build.classes}"/><fileset dir="${res.dir}"/></jar>
+    <copy file="ebuddy.jad" tofile="${dist.dir}/ebuddy.jad"/>
+  </target>
+  <target name="jar" depends="host-jar"/>
 </project>

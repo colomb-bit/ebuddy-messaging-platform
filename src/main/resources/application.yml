@@ -1,6 +1,12 @@
 server:
   port: ${PORT:8080}
   shutdown: graceful
+  tomcat:
+    threads:
+      max: ${HTTP_MAX_THREADS:50}
+      min-spare: ${HTTP_MIN_SPARE_THREADS:2}
+    accept-count: ${HTTP_ACCEPT_COUNT:100}
+    connection-timeout: ${HTTP_CONNECTION_TIMEOUT:15s}
   error:
     include-message: never
 
@@ -14,9 +20,13 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: ${DB_POOL_SIZE:20}
-      minimum-idle: 2
-      connection-timeout: 3000
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: 1
+      connection-timeout: 10000
+      validation-timeout: 2000
+      idle-timeout: 300000
+      max-lifetime: 600000
+      keepalive-time: 300000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

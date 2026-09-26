@@ -3,9 +3,9 @@ package com.ebuddy.j2me;
 import java.util.Vector;
 
 final class AppConfig {
-    static final String API = "https://api.example.com";
-    static final int CONNECT_TIMEOUT = 20000;
-    static final int READ_TIMEOUT = 30000;
+    static final String API = "https://ebuddy-backend.onrender.com";
+    static final int CONNECT_TIMEOUT = 90000;
+    static final int READ_TIMEOUT = 90000;
     static final int MAX_BODY = 4096;
     private AppConfig() {}
 }
