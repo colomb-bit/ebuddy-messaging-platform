@@ -79,8 +79,8 @@ class EbuddyE2ETest:
             json={
                 "username": username,
                 "password": password,
-                "client_type": client_type,
-                "device_label": "automated-e2e",
+                "clientType": client_type,
+                "deviceLabel": "automated-e2e",
             },
             headers={"Content-Type": "application/json"},
         )
